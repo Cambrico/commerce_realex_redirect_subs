@@ -60,7 +60,7 @@ function commerce_realex_redirect_subs_commerce_payment_method_info() {
     'description' => t('Realex global realtime payments exchange'),
     'terminal' => FALSE,
     'offsite' => TRUE,
-    'offsite_autoredirect' => FALSE,
+    'offsite_autoredirect' => TRUE,
     'active' => TRUE,
   );
 
