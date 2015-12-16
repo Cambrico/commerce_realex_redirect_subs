@@ -1,7 +1,0 @@
-name = Commerce Realex Redirect Payments
-description = Enables Realex Redirect Payments - hosted from Realex - integration with Drupal Commerce
-package = Commerce - Payment
-core = 7.x
-dependencies[] = variable
-dependencies[] = variable_realm
-files[] = commerce_realex_redirect.inc

@@ -7,19 +7,19 @@
 /**
  * Implements hook_variable_info().
  */
-function commerce_realex_redirect_variable_info($options) {
+function commerce_realex_redirect_subs_variable_info($options) {
   $variables = array();
 
-  $variables['commerce_realex_redirect_final_message'] = array(
+  $variables['commerce_realex_redirect_subs_final_message'] = array(
     'type' => 'text',
-    'group' => 'elisava_alumni',
+    'group' => 'commerce_realex_redirect_subs',
     'title' => t('Final message'),
     'localize' => TRUE,
   );
 
-  $variables['commerce_realex_redirect_link'] = array(
+  $variables['commerce_realex_redirect_subs_link'] = array(
     'type' => 'text',
-    'group' => 'elisava_alumni',
+    'group' => 'commerce_realex_redirect_subs',
     'title' => t('Link message'),
     'localize' => TRUE,
   );
@@ -30,11 +30,11 @@ function commerce_realex_redirect_variable_info($options) {
 /**
  * Implements hook_menu().
  */
-function commerce_realex_redirect_menu() {
+function commerce_realex_redirect_subs_menu() {
   $items = array();
 
-  $items['commerce_realex/callback'] = array(
-    'page callback' => 'commerce_realex_redirect_callback',
+  $items['commerce_realex_redirect_subs/callback'] = array(
+    'page callback' => 'commerce_realex_redirect_subs_callback',
     'access callback' => TRUE,
     'type' => MENU_CALLBACK,
   );
@@ -43,40 +43,24 @@ function commerce_realex_redirect_menu() {
 }
 
 /**
- * Implements hook_theme().
- */
-function commerce_realex_redirect_theme($existing, $type, $theme, $path) {
-  return array(
-    'commerce_realex_redirect_response_page' => array(
-      'variables' => array(
-        'order' => NULL,
-        'success' => NULL,
-        'payment_method' => NULL,
-      ),
-      'template' => 'commerce-realex-response-page',
-    ),
-  );
-}
-
-/**
  * Implements hook_commerce_payment_method_info().
  */
-function commerce_realex_redirect_commerce_payment_method_info() {
+function commerce_realex_redirect_subs_commerce_payment_method_info() {
   $payment_methods = array();
 
-  $icons = commerce_realex_redirect_icons();
+  $icons = commerce_realex_redirect_subs_icons();
   $display_title = t('!logo Realex - The global realtime payments exchange', array('!logo' => $icons['realex']));
   $display_title .= '<div class="commerce-realex-icons"><span class="label">' . t('Includes:') . '</span>' . implode(' ', $icons) . '</div>';
 
-  $payment_methods['realex_redirect'] = array(
-    'base' => 'commerce_realex_redirect',
+  $payment_methods['commerce_realex_redirect_subs'] = array(
+    'base' => 'commerce_realex_redirect_subs',
     'title' => t('Realex Redirect Payments'),
     'short_title' => t('Realex Redirect'),
     'display_title' => $display_title,
     'description' => t('Realex global realtime payments exchange'),
     'terminal' => FALSE,
     'offsite' => TRUE,
-    'offsite_autoredirect' => TRUE,
+    'offsite_autoredirect' => FALSE,
     'active' => TRUE,
   );
 
@@ -86,7 +70,7 @@ function commerce_realex_redirect_commerce_payment_method_info() {
 /**
  * Payment method callback: settings form.
  */
-function commerce_realex_redirect_settings_form($settings = NULL) {
+function commerce_realex_redirect_subs_settings_form($settings = NULL) {
   global $base_url;
   $form = array();
   // Merge default settings into the stored settings array.
@@ -94,9 +78,9 @@ function commerce_realex_redirect_settings_form($settings = NULL) {
   $settings = (array) $settings + array(
     'merchant_id' => '',
     'shared_secret' => '',
-    'currency_code' => in_array($default_currency, array_keys(commerce_realex_redirect_currencies())) ? $default_currency : 'USD',
+    'currency_code' => in_array($default_currency, array_keys(commerce_realex_redirect_subs_currencies())) ? $default_currency : 'USD',
     'server' => 'https://epage.payandshop.com/epage.cgi',
-    'merchant_response_url' => $base_url . '/commerce_realex/callback',
+    'merchant_response_url' => $base_url . '/commerce_realex_redirect_subs/callback',
     'language' => 'US',
     'account' => 'internet',
     'save_card' => 0,
@@ -146,7 +130,7 @@ function commerce_realex_redirect_settings_form($settings = NULL) {
     '#type' => 'select',
     '#title' => t('Currency code'),
     '#description' => t('Transactions can only be processed in one of the listed currencies.'),
-    '#options' => commerce_realex_redirect_currencies(),
+    '#options' => commerce_realex_redirect_subs_currencies(),
     '#default_value' => $settings['currency_code'],
   );
 
@@ -166,7 +150,7 @@ function commerce_realex_redirect_settings_form($settings = NULL) {
   $form['language'] = array(
     '#type' => 'select',
     '#title' => t('Realex login page language'),
-    '#options' => commerce_realex_redirect_languages(),
+    '#options' => commerce_realex_redirect_subs_languages(),
     '#default_value' => $settings['language'],
   );
 
@@ -176,11 +160,11 @@ function commerce_realex_redirect_settings_form($settings = NULL) {
 /**
  * Payment method callback: adds a message and CSS to the submission form.
  */
-function commerce_realex_redirect_submit_form($payment_method, $pane_values, $checkout_pane, $order) {
+function commerce_realex_redirect_subs_submit_form($payment_method, $pane_values, $checkout_pane, $order) {
   $form['realex_wps_information'] = array(
     '#markup' => '<span class="commerce-realex-wps-info">' . t('(Continue with checkout to complete payment via Realex.)') . '</span>',
     '#attached' => array(
-      'css' => array(drupal_get_path('module', 'commerce_realex_redirect') . '/theme/commerce_realex_redirect.css'),
+      'css' => array(drupal_get_path('module', 'commerce_realex_redirect_subs') . '/theme/commerce_realex_redirect_subs.css'),
     ),
   );
   return $form;
@@ -189,7 +173,7 @@ function commerce_realex_redirect_submit_form($payment_method, $pane_values, $ch
 /**
  * Payment method callback: redirect form.
  */
-function commerce_realex_redirect_redirect_form($form, &$form_state, $order, $payment_method) {
+function commerce_realex_redirect_subs_redirect_form($form, &$form_state, $order, $payment_method) {
   // Return an error if the enabling action's settings haven't been configured.
   if (empty($payment_method['settings']['merchant_id'])) {
     drupal_set_message(t('Realex is not configured for use. No Realex merchant ID has been specified.'), 'error');
@@ -205,14 +189,14 @@ function commerce_realex_redirect_redirect_form($form, &$form_state, $order, $pa
     'payment_method' => $payment_method['instance_id'],
   );
 
-  return commerce_realex_redirect_order_form($form, $form_state, $order, $payment_method['settings'] + $settings);
+  return commerce_realex_redirect_subs_order_form($form, $form_state, $order, $payment_method['settings'] + $settings);
 }
 
 /**
  * Implements hook_redirect_form_validate().
  */
-function commerce_realex_redirect_redirect_form_validate($order, $payment_method) {
-  commerce_realex_redirect_process_callback($order, $payment_method);
+function commerce_realex_redirect_subs_redirect_form_validate($order, $payment_method) {
+  commerce_realex_redirect_subs_process_callback($order, $payment_method);
 }
 
 /**
@@ -221,11 +205,11 @@ function commerce_realex_redirect_redirect_form_validate($order, $payment_method
  * This can either be through a redirect after payment, or a Direct HTTP
  * server-to-server request
  */
-function commerce_realex_redirect_process_callback($order, $payment_method) {
-  if ($feedback = commerce_realex_redirect_get_feedback()) {
-    if (commerce_realex_redirect_valid_sha1($order, $payment_method, $feedback)) {
+function commerce_realex_redirect_subs_process_callback($order, $payment_method) {
+  if ($feedback = commerce_realex_redirect_subs_get_feedback()) {
+    if (commerce_realex_redirect_subs_valid_sha1($order, $payment_method, $feedback)) {
       // Process the transaction based on the Realex parameters received
-      commerce_realex_redirect_process_transaction($order, $payment_method, $feedback);
+      commerce_realex_redirect_subs_process_transaction($order, $payment_method, $feedback);
       return TRUE;
     }
   }
@@ -252,7 +236,7 @@ function commerce_realex_redirect_process_callback($order, $payment_method) {
  * @return array
  *   A renderable form array.
  */
-function commerce_realex_redirect_order_form($form, &$form_state, $order, $settings) {
+function commerce_realex_redirect_subs_order_form($form, &$form_state, $order, $settings) {
   $wrapper = entity_metadata_wrapper('commerce_order', $order);
   $currency_code = $wrapper->commerce_order_total->currency_code->value();
   $amount = $wrapper->commerce_order_total->amount->value();
@@ -269,11 +253,11 @@ function commerce_realex_redirect_order_form($form, &$form_state, $order, $setti
   $account = user_load($order->uid);
   // Default to username but allow modules to alter it.
   $payer_ref = $account->name;
-  drupal_alter('commerce_realex_redirect_payer_ref', $payer_ref, $account, $order);
+  drupal_alter('commerce_realex_redirect_subs_payer_ref', $payer_ref, $account, $order);
 
   // Same goes for payment reference.
   $pmt_ref = $order->order_id . '-' . $order->uid;
-  drupal_alter('commerce_realex_redirect_pmt_ref', $pmt_ref, $order);
+  drupal_alter('commerce_realex_redirect_subs_pmt_ref', $pmt_ref, $order);
 
   $auto_settle_flag = 1;
 
@@ -350,21 +334,21 @@ function commerce_realex_redirect_order_form($form, &$form_state, $order, $setti
 /**
  * Get POST response from realex.
  */
-function commerce_realex_redirect_callback() {
+function commerce_realex_redirect_subs_callback() {
   // Load order and payment_method objects.
-  if ($feedback = commerce_realex_redirect_get_feedback()) {
+  if ($feedback = commerce_realex_redirect_subs_get_feedback()) {
     $order_id = explode("_", $feedback['ORDER_ID']);
     if ($order = commerce_order_load($order_id[1])) {
       // Load the payment method, since it won't be available if no $order
       // object was passed in as argument.
       $payment_method = commerce_payment_method_instance_load($order->data['payment_method']);
-      if (!$payment_method || $payment_method['method_id'] != 'realex_redirect') {
+      if (!$payment_method || $payment_method['method_id'] != 'commerce_realex_redirect_subs') {
         return FALSE;
       }
-      if (commerce_realex_redirect_valid_sha1($order, $payment_method, $feedback)) {
-        commerce_realex_redirect_process_transaction($order, $payment_method, $feedback);
-        $final_message = variable_get('commerce_realex_redirect_final_message', array());
-        $link_final_message = variable_get('commerce_realex_redirect_link', array());
+      if (commerce_realex_redirect_subs_valid_sha1($order, $payment_method, $feedback)) {
+        commerce_realex_redirect_subs_process_transaction($order, $payment_method, $feedback);
+        $final_message = variable_get('commerce_realex_redirect_subs_final_message', array());
+        $link_final_message = variable_get('commerce_realex_redirect_subs_link', array());
         $link_options = array(
           'absolute'=> TRUE,
           'language' => array('language' => FALSE),
@@ -374,15 +358,31 @@ function commerce_realex_redirect_callback() {
           'payment_method' => $payment_method,
           'message' => $final_message,
           'link' => l($link_final_message, commerce_checkout_order_uri($order), $link_options),
-          'img_url' => url(drupal_get_path('theme', 'elisava_alumni_zen') . '/images/', $link_options),
         );
-        print theme('commerce_realex_redirect_response_page', $variables_tpl);
+        print theme('commerce_realex_redirect_subs_response_page', $variables_tpl);
         exit();
       }
     }
   }
 
   return FALSE;
+}
+
+/**
+ * Implements hook_theme().
+ */
+function commerce_realex_redirect_subs_theme($existing, $type, $theme, $path) {
+  return array(
+    'commerce_realex_redirect_subs_response_page' => array(
+      'variables' => array(
+        'order' => NULL,
+        'payment_method' => NULL,
+        'message' => NULL,
+        'link' => NULL,
+      ),
+      'template' => 'commerce-realex-redirect-subs-response-page',
+    ),
+  );
 }
 
 /**
@@ -394,7 +394,7 @@ function commerce_realex_redirect_callback() {
  *   Returns FALSE if the Ds_Order parameter is missing (indicating missing or
  *   invalid Realex feedback).
  */
-function commerce_realex_redirect_get_feedback() {
+function commerce_realex_redirect_subs_get_feedback() {
   $feedback = FALSE;
   if (isset($_REQUEST['ORDER_ID'])) {
     // Prepare the feedback values sent by Realex for processing. We don't use
@@ -409,7 +409,7 @@ function commerce_realex_redirect_get_feedback() {
 /**
  * Check if SHA1 in callback feedback is valid.
  */
-function commerce_realex_redirect_valid_sha1($order, $payment_method, $feedback) {
+function commerce_realex_redirect_subs_valid_sha1($order, $payment_method, $feedback) {
   $timestamp = $feedback['TIMESTAMP'];
   $result = $feedback['RESULT'];
   $orderid = $feedback['ORDER_ID'];
@@ -425,12 +425,12 @@ function commerce_realex_redirect_valid_sha1($order, $payment_method, $feedback)
   $message = "$sha1hash.$secret";
 
   if ($feedback['SHA1HASH'] != sha1($message)) {
-    watchdog('commerce_realex_redirect', "Signature for the payment doesn't match", array(), WATCHDOG_ERROR);
+    watchdog('commerce_realex_redirect_subs', "Signature for the payment doesn't match", array(), WATCHDOG_ERROR);
     return FALSE;
   }
 
   if (empty($feedback['PASREF'])) {
-    watchdog('commerce_realex_redirect', 'No authorisation code for the transaction', array(), WATCHDOG_ERROR);
+    watchdog('commerce_realex_redirect_subs', 'No authorisation code for the transaction', array(), WATCHDOG_ERROR);
     return FALSE;
   }
 
@@ -440,7 +440,7 @@ function commerce_realex_redirect_valid_sha1($order, $payment_method, $feedback)
 /**
  * Get transaction with a specific Realex reference.
  */
-function commerce_realex_redirect_get_payment_transaction($feedback) {
+function commerce_realex_redirect_subs_get_payment_transaction($feedback) {
   $feedback_remote_id = $feedback['PASREF'];
 
   $query = new EntityFieldQuery();
@@ -460,8 +460,8 @@ function commerce_realex_redirect_get_payment_transaction($feedback) {
 /**
  * Save the payment transaction for the order.
  */
-function commerce_realex_redirect_process_transaction($order, $payment_method, $feedback, $redirect = TRUE) {
-  $transaction_id = commerce_realex_redirect_get_payment_transaction($feedback);
+function commerce_realex_redirect_subs_process_transaction($order, $payment_method, $feedback, $redirect = TRUE) {
+  $transaction_id = commerce_realex_redirect_subs_get_payment_transaction($feedback);
   if (!$transaction_id) {
     $transaction = commerce_payment_transaction_new('realex_redirect', $order->order_id);
   }
@@ -486,9 +486,9 @@ function commerce_realex_redirect_process_transaction($order, $payment_method, $
       user_save($account);
     }
     else {
-      watchdog('commerce_realex_redirect', 'Payment processed but card was not saved for the user, Order: %order_id', array('%order_id' => $order->order_id), WATCHDOG_ERROR);
-      watchdog('commerce_realex_redirect', 'Payer setup error: %PAYER_SETUP_MSG', array('%PAYER_SETUP_MSG' => $feedback['PAYER_SETUP'] .':' . $feedback['PAYER_SETUP_MSG']), WATCHDOG_ERROR);
-      watchdog('commerce_realex_redirect', 'Payment setup error: %PMT_SETUP_MSG', array('%PMT_SETUP_MSG' => $feedback['PMT_SETUP'] .':' . $feedback['PMT_SETUP_MSG']), WATCHDOG_ERROR);
+      watchdog('commerce_realex_redirect_subs', 'Payment processed but card was not saved for the user, Order: %order_id', array('%order_id' => $order->order_id), WATCHDOG_ERROR);
+      watchdog('commerce_realex_redirect_subs', 'Payer setup error: %PAYER_SETUP_MSG', array('%PAYER_SETUP_MSG' => $feedback['PAYER_SETUP'] .':' . $feedback['PAYER_SETUP_MSG']), WATCHDOG_ERROR);
+      watchdog('commerce_realex_redirect_subs', 'Payment setup error: %PMT_SETUP_MSG', array('%PMT_SETUP_MSG' => $feedback['PMT_SETUP'] .':' . $feedback['PMT_SETUP_MSG']), WATCHDOG_ERROR);
     }
   }
 
@@ -508,7 +508,7 @@ function commerce_realex_redirect_process_transaction($order, $payment_method, $
  * @return array
  *   The array of themed payment method icons keyed by name.
  */
-function commerce_realex_redirect_icons() {
+function commerce_realex_redirect_subs_icons() {
   $icons = array('realex' => t('Realex'));
 
   $payment_methods = array(
@@ -520,7 +520,7 @@ function commerce_realex_redirect_icons() {
 
   foreach ($payment_methods as $name => $title) {
     $variables = array(
-      'path' => drupal_get_path('module', 'commerce_realex_redirect') . '/images/' . $name . '.gif',
+      'path' => drupal_get_path('module', 'commerce_realex_redirect_subs') . '/images/' . $name . '.gif',
       'title' => $title,
       'alt' => $title,
       'attributes' => array(
@@ -536,13 +536,13 @@ function commerce_realex_redirect_icons() {
 /**
  * Returns an array of all possible language codes.
  */
-function commerce_realex_redirect_languages() {
+function commerce_realex_redirect_subs_languages() {
   return drupal_map_assoc(array('AU', 'DE', 'FR', 'IT', 'GB', 'ES', 'US'));
 }
 
 /**
  * Returns an array of all possible currency codes.
  */
-function commerce_realex_redirect_currencies() {
+function commerce_realex_redirect_subs_currencies() {
   return drupal_map_assoc(array('AUD', 'BRL', 'CAD', 'CHF', 'CZK', 'DKK', 'EUR', 'GBP', 'HKD', 'HUF', 'ILS', 'JPY', 'MXN', 'MYR', 'NOK', 'NZD', 'PHP', 'PLN', 'SEK', 'SGD', 'THB', 'TWD', 'USD'));
 }

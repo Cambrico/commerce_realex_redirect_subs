@@ -21,16 +21,6 @@
     color: #df5954;
     text-decoration: none;
   }
-  a:after {
-    display: block;
-    content: "";
-    position: absolute;
-    top: 10px;
-    right: -30px;
-    width: 22px;
-    height: 12px;
-    background: url("<?php print $variables['img_url'] ?>ico-arrow-forward-red.png") no-repeat 0 0;
-  }
   a:hover {
     text-decoration: underline;
   }

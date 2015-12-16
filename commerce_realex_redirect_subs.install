@@ -1,0 +1,21 @@
+<?php
+
+/**
+ * @file
+ * Install file for commerce_realex_redirect_subs.
+ */
+
+/**
+ * Implements hook_install().
+ */
+function commerce_realex_redirect_subs_install() {
+  // Set the variables for the payment final page.
+  variable_set('commerce_realex_redirect_subs_final_message', 'Your order has succeeded');
+  variable_set('commerce_realex_redirect_subs_link', 'Go back to the page');
+
+  // Enable multilingual by default for these variables.
+  $variables = variable_children(variable_get('variable_realm_list_language', array()));
+  $variables[] = 'commerce_realex_redirect_subs_final_message';
+  $variables[] = 'commerce_realex_redirect_subs_link';
+  variable_set('variable_realm_list_language', $variables);
+}
