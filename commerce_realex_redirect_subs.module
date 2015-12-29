@@ -474,6 +474,7 @@ function commerce_realex_redirect_subs_process_transaction($order, $payment_meth
   $transaction->amount = $order->commerce_order_total[LANGUAGE_NONE][0]['amount'];
   $transaction->currency_code = $order->commerce_order_total[LANGUAGE_NONE][0]['currency_code'];
   $transaction->remote_id = $feedback['PASREF'];
+  $transaction->remote_status = empty($feedback['PMT_SETUP']) ? '' : $feedback['PMT_SETUP'];
   $transaction->status = $feedback['RESULT'];
   $transaction->message = $feedback['MESSAGE'];
   commerce_payment_transaction_save($transaction);
@@ -481,9 +482,15 @@ function commerce_realex_redirect_subs_process_transaction($order, $payment_meth
   // Mark the user as recurring.
   if (!empty($feedback['REALWALLET_CHOSEN'])) {
     if ($feedback['PAYER_SETUP'] == '00' && $feedback['PMT_SETUP'] == '00') {
-      $account = user_load($order->uid);
-      $account->data['recurring_enabled'] = TRUE;
-      user_save($account);
+      // Store SAVED_PAYER_REF, SAVED_PMT_REF and SAVED_PMT_EXPDATE in customer profile data.
+      $order_wrapper = entity_metadata_wrapper('commerce_order', $order);
+      $customer_profile = $order_wrapper->commerce_customer_billing->value();
+      $customer_profile->data['realex_token'] = array(
+        'PAYER_REF' => $feddback['SAVED_PAYER_REF'],
+        'PMT_REF' => $feddback['SAVED_PMT_REF'],
+        'PMT_EXPDATE' => $feddback['SAVED_PMT_EXPDATE'],
+      );
+      commerce_customer_profile_save($customer_profile);
     }
     else {
       watchdog('commerce_realex_redirect_subs', 'Payment processed but card was not saved for the user, Order: %order_id', array('%order_id' => $order->order_id), WATCHDOG_ERROR);

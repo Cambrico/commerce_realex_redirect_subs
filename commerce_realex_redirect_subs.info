@@ -2,5 +2,9 @@ name = Commerce Realex Redirect Subscription Payments
 description = Enables Realex Redirect Subscription Payments - hosted from Realex - integration with Drupal Commerce
 package = Commerce - Payment
 core = 7.x
+configure = admin/commerce/config/payment-methods
+
+dependencies[] = commerce
+dependencies[] = commerce_payment
 dependencies[] = variable
 dependencies[] = variable_realm
