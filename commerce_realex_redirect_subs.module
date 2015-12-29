@@ -486,9 +486,9 @@ function commerce_realex_redirect_subs_process_transaction($order, $payment_meth
       $order_wrapper = entity_metadata_wrapper('commerce_order', $order);
       $customer_profile = $order_wrapper->commerce_customer_billing->value();
       $customer_profile->data['realex_token'] = array(
-        'SAVED_PAYER_REF' => $feddback['SAVED_PAYER_REF'],
-        'SAVED_PMT_REF' => $feddback['SAVED_PMT_REF'],
-        'SAVED_PMT_EXPDATE' => $feddback['SAVED_PMT_EXPDATE'],
+        'PAYER_REF' => $feddback['SAVED_PAYER_REF'],
+        'PMT_REF' => $feddback['SAVED_PMT_REF'],
+        'PMT_EXPDATE' => $feddback['SAVED_PMT_EXPDATE'],
       );
       commerce_customer_profile_save($customer_profile);
     }
