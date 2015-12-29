@@ -474,6 +474,7 @@ function commerce_realex_redirect_subs_process_transaction($order, $payment_meth
   $transaction->amount = $order->commerce_order_total[LANGUAGE_NONE][0]['amount'];
   $transaction->currency_code = $order->commerce_order_total[LANGUAGE_NONE][0]['currency_code'];
   $transaction->remote_id = $feedback['PASREF'];
+  $transaction->remote_status = empty($feedback['PMT_SETUP']) ? '' : $feedback['PMT_SETUP'];
   $transaction->status = $feedback['RESULT'];
   $transaction->message = $feedback['MESSAGE'];
   commerce_payment_transaction_save($transaction);
