@@ -475,8 +475,19 @@ function commerce_realex_redirect_subs_process_transaction($order, $payment_meth
   $transaction->currency_code = $order->commerce_order_total[LANGUAGE_NONE][0]['currency_code'];
   $transaction->remote_id = $feedback['PASREF'];
   $transaction->remote_status = empty($feedback['PMT_SETUP']) ? '' : $feedback['PMT_SETUP'];
-  $transaction->status = $feedback['RESULT'];
-  $transaction->message = $feedback['MESSAGE'];
+
+  switch ($transaction->remote_status) {
+    case '00':
+      $transaction->status = COMMERCE_PAYMENT_STATUS_SUCCESS;
+      $transaction->message = $feedback['MESSAGE'];
+      break;
+
+    default:
+      $transaction->status = COMMERCE_PAYMENT_STATUS_FAILURE;
+      $transaction->message = t("The payment has failed: !message.", array('!message' => $feedback['MESSAGE']));
+      break;
+  }
+
   commerce_payment_transaction_save($transaction);
 
   // Mark the user as recurring.
@@ -582,5 +593,3 @@ function commerce_realex_redirect_subs_commerce_order_status_info() {
 
   return $order_statuses;
 }
-
-
