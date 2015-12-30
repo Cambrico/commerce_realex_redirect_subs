@@ -502,6 +502,7 @@ function commerce_realex_redirect_subs_process_transaction($order, $payment_meth
   if ($redirect) {
     if ($feedback['RESULT'] == '00') {
       commerce_payment_redirect_pane_next_page($order);
+      commerce_order_status_update($order, 'commerce_realex_pending');
     }
     else {
       commerce_payment_redirect_pane_previous_page($order);
@@ -553,3 +554,33 @@ function commerce_realex_redirect_subs_languages() {
 function commerce_realex_redirect_subs_currencies() {
   return drupal_map_assoc(array('AUD', 'BRL', 'CAD', 'CHF', 'CZK', 'DKK', 'EUR', 'GBP', 'HKD', 'HUF', 'ILS', 'JPY', 'MXN', 'MYR', 'NOK', 'NZD', 'PHP', 'PLN', 'SEK', 'SGD', 'THB', 'TWD', 'USD'));
 }
+
+/**
+ * Implements hook_commerce_order_status_info().
+ */
+function commerce_realex_redirect_subs_commerce_order_status_info() {
+  $order_statuses = array();
+
+  $order_statuses['commerce_realex_pending'] = array(
+    'name' => 'commerce_realex_pending',
+    'title' => t('Pending (Subscription order)'),
+    'state' => 'pending',
+    'weight' => -1,
+  );
+  $order_statuses['commerce_realex_error'] = array(
+    'name' => 'commerce_realex_error',
+    'title' => t('Error (Subscription order)'),
+    'state' => 'pending',
+    'weight' => -2,
+  );
+  $order_statuses['commerce_realex_complete'] = array(
+    'name' => 'commerce_realex_complete',
+    'title' => t('Completed (Subscription order)'),
+    'state' => 'completed',
+    'weight' => -3,
+  );
+
+  return $order_statuses;
+}
+
+
