@@ -475,33 +475,54 @@ function commerce_realex_redirect_subs_process_transaction($order, $payment_meth
   $transaction->currency_code = $order->commerce_order_total[LANGUAGE_NONE][0]['currency_code'];
   $transaction->remote_id = $feedback['PASREF'];
   $transaction->remote_status = empty($feedback['PMT_SETUP']) ? '' : $feedback['PMT_SETUP'];
-  $transaction->status = $feedback['RESULT'];
-  $transaction->message = $feedback['MESSAGE'];
+
+  switch ($transaction->remote_status) {
+    case '00':
+      $transaction->status = COMMERCE_PAYMENT_STATUS_SUCCESS;
+      $transaction->message = $feedback['MESSAGE'];
+      break;
+
+    default:
+      $transaction->status = COMMERCE_PAYMENT_STATUS_FAILURE;
+      $transaction->message = t("The payment has failed: !message.", array('!message' => $feedback['MESSAGE']));
+      break;
+  }
   commerce_payment_transaction_save($transaction);
 
   // Mark the user as recurring.
   if (!empty($feedback['REALWALLET_CHOSEN'])) {
-    if ($feedback['PAYER_SETUP'] == '00' && $feedback['PMT_SETUP'] == '00') {
-      // Store SAVED_PAYER_REF, SAVED_PMT_REF and SAVED_PMT_EXPDATE in customer profile data.
-      $order_wrapper = entity_metadata_wrapper('commerce_order', $order);
-      $customer_profile = $order_wrapper->commerce_customer_billing->value();
-      $customer_profile->data['realex_token'] = array(
-        'PAYER_REF' => $feddback['SAVED_PAYER_REF'],
-        'PMT_REF' => $feddback['SAVED_PMT_REF'],
-        'PMT_EXPDATE' => $feddback['SAVED_PMT_EXPDATE'],
+    if ($feedback['PMT_SETUP'] == '00') {
+      // Store SAVED_PAYER_REF, SAVED_PMT_REF and SAVED_PMT_EXPDATE in order data.
+      $order->data['realex_token'] = array(
+        'PAYER_REF' => $feedback['SAVED_PAYER_REF'],
+        'PMT_REF' => $feedback['SAVED_PMT_REF'],
+        'PMT_EXPDATE' => $feedback['SAVED_PMT_EXPDATE'],
       );
-      commerce_customer_profile_save($customer_profile);
+      // Make sure the order status is updated.
+      if (!$redirect) {
+        commerce_order_status_update($order, 'commerce_realex_pending');
+      }
     }
     else {
       watchdog('commerce_realex_redirect_subs', 'Payment processed but card was not saved for the user, Order: %order_id', array('%order_id' => $order->order_id), WATCHDOG_ERROR);
       watchdog('commerce_realex_redirect_subs', 'Payer setup error: %PAYER_SETUP_MSG', array('%PAYER_SETUP_MSG' => $feedback['PAYER_SETUP'] .':' . $feedback['PAYER_SETUP_MSG']), WATCHDOG_ERROR);
       watchdog('commerce_realex_redirect_subs', 'Payment setup error: %PMT_SETUP_MSG', array('%PMT_SETUP_MSG' => $feedback['PMT_SETUP'] .':' . $feedback['PMT_SETUP_MSG']), WATCHDOG_ERROR);
+      // Make sure the order status is updated.
+      if (!$redirect) {
+        commerce_order_status_update($order, 'commerce_realex_error');
+      }
     }
   }
 
   if ($redirect) {
     if ($feedback['RESULT'] == '00') {
       commerce_payment_redirect_pane_next_page($order);
+      if (!empty($order->data['realex_token'])) {
+        commerce_order_status_update($order, 'commerce_realex_pending');
+      }
+      else {
+        commerce_order_status_update($order, 'commerce_realex_error');
+      }
     }
     else {
       commerce_payment_redirect_pane_previous_page($order);
@@ -552,4 +573,32 @@ function commerce_realex_redirect_subs_languages() {
  */
 function commerce_realex_redirect_subs_currencies() {
   return drupal_map_assoc(array('AUD', 'BRL', 'CAD', 'CHF', 'CZK', 'DKK', 'EUR', 'GBP', 'HKD', 'HUF', 'ILS', 'JPY', 'MXN', 'MYR', 'NOK', 'NZD', 'PHP', 'PLN', 'SEK', 'SGD', 'THB', 'TWD', 'USD'));
+}
+
+/**
+ * Implements hook_commerce_order_status_info().
+ */
+function commerce_realex_redirect_subs_commerce_order_status_info() {
+  $order_statuses = array();
+
+  $order_statuses['commerce_realex_pending'] = array(
+    'name' => 'commerce_realex_pending',
+    'title' => t('Pending (Subscription order)'),
+    'state' => 'pending',
+    'weight' => -1,
+  );
+  $order_statuses['commerce_realex_error'] = array(
+    'name' => 'commerce_realex_error',
+    'title' => t('Error (Subscription order)'),
+    'state' => 'pending',
+    'weight' => -2,
+  );
+  $order_statuses['commerce_realex_complete'] = array(
+    'name' => 'commerce_realex_complete',
+    'title' => t('Completed (Subscription order)'),
+    'state' => 'completed',
+    'weight' => -3,
+  );
+
+  return $order_statuses;
 }
