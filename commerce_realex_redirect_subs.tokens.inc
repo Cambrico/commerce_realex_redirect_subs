@@ -42,7 +42,7 @@ function commerce_realex_redirect_subs_tokens($type, $tokens, array $data = arra
       switch ($name) {
         // Simple key values on the order.
         case 'payer-ref':
-          $replacements[$original] = empy($order->data['realex_token']['PAYER_REF']) ? '' : $order->data['realex_token']['PAYER_REF'];
+          $replacements[$original] = empty($order->data['realex_token']['PAYER_REF']) ? '' : $order->data['realex_token']['PAYER_REF'];
           break;
 
         case 'pmt-ref':
