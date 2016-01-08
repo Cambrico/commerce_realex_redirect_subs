@@ -593,8 +593,8 @@ function commerce_realex_redirect_subs_commerce_order_status_info() {
     'state' => 'pending',
     'weight' => -2,
   );
-  $order_statuses['commerce_realex_complete'] = array(
-    'name' => 'commerce_realex_complete',
+  $order_statuses['commerce_realex_completed'] = array(
+    'name' => 'commerce_realex_completed',
     'title' => t('Completed (Subscription order)'),
     'state' => 'completed',
     'weight' => -3,
