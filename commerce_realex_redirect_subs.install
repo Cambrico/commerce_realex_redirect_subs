@@ -19,3 +19,11 @@ function commerce_realex_redirect_subs_install() {
   $variables[] = 'commerce_realex_redirect_subs_link';
   variable_set('variable_realm_list_language', $variables);
 }
+
+/**
+ * Implements hook_uninstall().
+ */
+function commerce_realex_redirect_subs_uninstall() {
+  // Force to remove the default rule config.
+  entity_delete('rules_config', 'commerce_payment_commerce_realex_redirect_subs');
+}
